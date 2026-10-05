@@ -102,11 +102,12 @@
 <noscript><p style="padding:90px 20px;text-align:center">Glucopet membutuhkan JavaScript. Aktifkan JavaScript di browsermu.</p></noscript>
 <script>
 window.ggFix=function(){var p=[];try{if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(r){return Promise.all(r.map(function(x){return x.unregister()}))}))}catch(e){}try{if(window.caches)p.push(caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))}))}catch(e){}return Promise.all(p).then(function(){location.replace(location.pathname)},function(){location.replace(location.pathname)})};
-window.ggError=function(e){try{console.error(e);if(document.getElementById('gg-err'))return;var d=document.createElement('div');d.id='gg-err';d.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:99;background:#2A1B4D;color:#fff;padding:12px 14px;border-radius:16px;font:600 13px system-ui,sans-serif';d.innerHTML='\u26A0\uFE0F Sebagian fitur gagal dimuat. <button id="gg-fix" style="margin-left:6px;padding:6px 12px;border:0;border-radius:99px;background:#00F5D4;font-weight:800;cursor:pointer">Bersihkan cache &amp; muat ulang</button>';document.body.appendChild(d);document.getElementById('gg-fix').onclick=window.ggFix}catch(x){}};
-window.addEventListener('error',function(e){window.ggError(e.error||e.message)});
-window.addEventListener('unhandledrejection',function(e){window.ggError(e.reason)});
+window.ggError=function(e,w){try{console.error(e);var m=String((e&&e.message)||e||'Unknown error').slice(0,160);var d=document.getElementById('gg-err');if(!d){d=document.createElement('div');d.id='gg-err';d.style.cssText='position:fixed;left:12px;right:12px;bottom:96px;z-index:99;background:#2A1B4D;color:#fff;padding:12px 14px;border-radius:16px;font:600 13px system-ui,sans-serif';document.body.appendChild(d)}d.innerHTML='\u26A0\uFE0F Sebagian fitur gagal dimuat.<br><small id="gg-msg" style="opacity:.8"></small><br><button id="gg-fix" style="margin-top:8px;padding:6px 12px;border:0;border-radius:99px;background:#00F5D4;font-weight:800;cursor:pointer">Bersihkan cache &amp; muat ulang</button>';document.getElementById('gg-msg').textContent=m+(w?' ('+w+')':'');document.getElementById('gg-fix').onclick=window.ggFix}catch(x){}};
+window.addEventListener('error',function(e){if(String(e.filename||'').indexOf('app.js')>-1)window.ggError(e.error||e.message,'app.js:'+e.lineno)});
+window.addEventListener('unhandledrejection',function(e){var s=e.reason&&e.reason.stack;if(String(s||'').indexOf('app.js')>-1)window.ggError(e.reason)});
 if(location.search.indexOf('reset')>-1)window.ggFix();
 </script>
 <script src="app.js"></script>
+<script>if(!window.GG_LOADED)window.ggError('app.js tidak lengkap atau terpotong (SyntaxError). Upload ulang file app.js yang utuh dari hasil download.')</script>
 </body>
 </html>
