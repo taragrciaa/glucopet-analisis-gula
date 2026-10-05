@@ -23,7 +23,8 @@ glucopet/
 ├── styles.css      # Tema, animasi, layout responsif
 ├── app.js          # Semua logika dan data
 ├── manifest.json   # Konfigurasi PWA
-├── sw.js           # Service Worker (cache offline)
+├── sw.js           # Service Worker (network-first, cache untuk offline)
+├── vercel.json     # Header Vercel: sw.js tidak boleh di-cache browser
 ├── icon.svg        # Ikon aplikasi
 └── README.md
 ```
@@ -55,6 +56,12 @@ git push -u origin main
 
 Setiap `git push` ke `main` akan ter-deploy otomatis dengan HTTPS, sehingga tombol "Install" PWA muncul di browser.
 
+Pastikan `index.html` berada di **root** repo (bukan di dalam subfolder), dan `vercel.json` ikut di-commit.
+
+### Kalau layar putih / tampilan lama menempel
+
+Service worker versi lama bisa tersimpan di browser. Buka sekali `https://domain-kamu.vercel.app/?reset` untuk menghapus service worker dan cache, lalu halaman dimuat ulang. Kalau masih bermasalah, buka DevTools → Console dan lihat pesan error-nya.
+
 ## Install di HP
 
 - **Android (Chrome):** menu ⋮ → **Install app** / **Add to Home screen**.
@@ -85,7 +92,7 @@ Semua data ada di `app.js`:
 
 Setiap item kuliner sebaiknya memakai emoji yang unik. Browser akan menampilkan peringatan di console jika ada yang kembar.
 
-**Penting:** setiap kali mengubah file yang di-cache, naikkan nama cache di `sw.js` (misalnya `glucopet-v5` menjadi `glucopet-v6`) supaya pengguna lama mendapat versi terbaru.
+**Catatan:** `sw.js` memakai strategi network-first, jadi pengguna online selalu mendapat versi terbaru. Kalau menambah file baru yang harus tersedia offline, tambahkan ke daftar `ASSETS` di `sw.js` dan naikkan nama cache (misalnya `glucopet-v6` menjadi `glucopet-v7`).
 
 ## Sumber edukasi
 
@@ -97,4 +104,3 @@ Batas konsumsi gula mengacu pada Permenkes No. 30 Tahun 2013 (Kemenkes RI), reko
 - Estimasi durasi olahraga memakai asumsi berat badan ±60 kg.
 - Glucopet bersifat edukatif dan **bukan pengganti saran medis**. Konsultasikan kondisi kesehatanmu dengan tenaga kesehatan.
 - Untuk ikon install Android yang optimal, tambahkan ikon PNG 192×192 dan 512×512 ke `manifest.json`.
-- 
