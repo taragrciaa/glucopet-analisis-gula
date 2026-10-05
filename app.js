@@ -1,4 +1,6 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function boot(){
+const NIL=()=>({style:{},classList:{toggle(){},add(){},remove(){}},addEventListener(){},scrollIntoView(){},dataset:{},value:''});
+const $=s=>document.querySelector(s)||NIL(),$$=s=>[...document.querySelectorAll(s)];
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const load=k=>{try{return JSON.parse(ls.get(k))}catch(e){return null}};
 
@@ -10,7 +12,9 @@ lens:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
 kuliner:'<path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v6M9 3v6M17 21V3c-2 1-3 4-3 8h3"/>',
 hydration:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'};
 $('#bnav').innerHTML=TABS.map(([id,l])=>`<button class="nb" data-t="${id}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[id]}</svg>${l}</button>`).join('');
-function go(id){if(!TABS.some(t=>t[0]===id))id='faktapedia';$$('.tab').forEach(t=>t.classList.toggle('active',t.id===id));$$('.nb').forEach(b=>b.classList.toggle('on',b.dataset.t===id));scrollTo({top:0,behavior:'smooth'});history.replaceState(null,'','#'+id)}
+function go(id){if(!TABS.some(t=>t[0]===id))id='faktapedia';$$('.tab').forEach(t=>t.classList.toggle('active',t.id===id));$$('.nb').forEach(b=>b.classList.toggle('on',b.dataset.t===id));scrollTo({top:0,behavior:'smooth'});try{history.replaceState(null,'','#'+id)}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)go(b.dataset.t)});
+go(location.hash.slice(1)||'faktapedia');
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.append(d);setTimeout(()=>d.remove(),1800)}
 
 /* ---------- Faktapedia ---------- */
@@ -68,7 +72,10 @@ const CRAVING=[['🧊','Metode Delay 15 Menit','Saat ingin boba atau minuman man
 ['🍋','Infused Water Citrus & Mint','Sensasi segar asam dari lemon atau daun mint membantu mengecoh lidah yang haus rasa manis.'],
 ['🥜','Kombinasi Protein + Serat','Kalau lapar manis, makan pisang atau apel bersama segenggam almond atau peanut butter murni supaya kenyang lebih lama.'],
 ['😴','Cek Tidur & Hidrasi','Craving manis di siang atau sore sering jadi sinyal kurang air putih atau kurang tidur semalam. Minum dulu, tidur cukup.'],
-['🍵','Teh Kayu Manis (Cinnamon)','Seduhan teh kayu manis hangat dapat membantu meredakan rasa ingin ngemil manis. Tanpa gula tambahan ya.']];
+['🍵','Teh Kayu Manis (Cinnamon)','Seduhan teh kayu manis hangat dapat membantu meredakan rasa ingin ngemil manis. Tanpa gula tambahan ya.'],
+['📉','Turunkan Bertahap','Kurangi gula sekitar 25% tiap minggu (100% → 75% → 50% → 25%). Lidah menyesuaikan pelan-pelan, jadi tidak terasa menyiksa.'],
+['🍌','Nice Cream Pisang Beku','Blender pisang beku sampai creamy. Teksturnya mirip es krim, manisnya alami, tanpa gula tambahan.'],
+['🛒','Atur Lingkungan','Jangan stok minuman manis di kamar atau kulkas. Siapkan air putih dan buah di tempat yang paling mudah dijangkau.']];
 $('#craving').innerHTML=CRAVING.map(([e,t,d])=>`<button class="card flip" aria-label="${t}"><div class="fi"><div class="fa"><span class="emo">${e}</span><b>${t}</b><small>Tap untuk lihat triknya</small></div><div class="fb"><b>${t}</b>${d}</div></div></button>`).join('');
 $('#craving').addEventListener('click',e=>{const f=e.target.closest('.flip');if(f)f.classList.toggle('f')});
 $('#hacks').innerHTML=[['🧋','Boba: pilih less sugar 25%'],['🥤','Soda → air soda + jeruk nipis'],['🍌','Wafer → pisang + selai kacang'],['☕','Kopi susu → tanpa gula tambahan']].map(([e,t])=>`<div class="card hk"><span>${e}</span>${t}</div>`).join('');
@@ -82,7 +89,7 @@ function resultHTML(n,g,k,note,rk){const[c,l,d]=rk||lvl(g,k);return`<div class="
 
 /* ---------- Daily Sugar Tracker ---------- */
 const day=new Date().toDateString();
-let LOG=load('gg_log');if(!LOG||LOG.d!==day)LOG={d:day,items:[]};
+let LOG=load('gg_log');if(!LOG||LOG.d!==day||!Array.isArray(LOG.items))LOG={d:day,items:[]};LOG.items=LOG.items.filter(i=>i&&isFinite(i.g)&&isFinite(i.k));
 let LIM=+ls.get('gg_lim')||50;
 function renderTrk(){const g=Math.round(LOG.items.reduce((s,i)=>s+i.g,0)),k=LOG.items.reduce((s,i)=>s+i.k,0),p=Math.min(100,Math.round(g/LIM*100)),c=g>LIM?'r':g>LIM*.7?'y':'g';
 $('#trk').innerHTML=`<h2 class="gt">📊 Gula Tracker Harian</h2><div class="card pad"><div class="nums"><div><b class="gt">${g} g</b>terkonsumsi</div><div><b class="gt">${sdt(g)} 🍵</b>sdt</div><div><b class="gt">${LIM} g</b>batas aman</div></div><div class="bar"><i class="${c}" style="width:${p}%"></i></div><p>${g>LIM?'🔴 Melewati batas! Imbangi dengan gerak dan air putih.':g>LIM*.7?'🟡 Hampir batas. Pilih yang tanpa gula dulu.':'🟢 Masih aman. Lanjut hari ini!'} (${k} kkal tercatat)</p>${LOG.items.length?`<ul class="log">${LOG.items.map((i,x)=>`<li><span>${i.n}</span><b>${i.g} g</b><button class="del" data-x="${x}" aria-label="Hapus ${i.n}">✕</button></li>`).join('')}</ul><button class="btn alt" id="rs">Reset hari ini</button>`:'<p class="muted">Belum ada catatan. Tekan "+ Catat" di Kuliner atau Gula Lens.</p>'}</div>`;
@@ -90,10 +97,4 @@ $('#chip').textContent=`${g}/${LIM} g`;$('#hs').textContent=`Hari ini kamu menca
 function renderDash(){const g=Math.round(LOG.items.reduce((s,i)=>s+i.g,0)),k=LOG.items.reduce((s,i)=>s+i.k,0),t=target(),wp=Math.min(100,Math.round(H.ml/t*100));
 $('#dash').innerHTML=`<h2 class="gt">📈 Dashboard Total Harian</h2><div class="card pad"><div class="nums"><div><b class="gt">${H.ml} ml</b>air putih (${wp}%)</div><div><b class="gt">${g} g</b>gula</div><div><b class="gt">${k}</b>kalori</div></div>${g>LIM?`<h4>⚠️ Asupan berlebih. Burn Solution-mu:</h4>${burnHTML(k)}<p>${wp<100?'💧 Lengkapi air putihmu sampai '+t+' ml supaya metabolisme lancar.':'💧 Air putihmu sudah cukup, pertahankan!'}</p>`:`<p>${k?'✅ Gulamu masih di bawah batas. Burn Solution muncul otomatis kalau melewati '+LIM+' g.':'Belum ada konsumsi tercatat hari ini.'}</p>`}</div>`}
 function add(n,g,k){LOG.items.push({n,g:+g,k:+k});renderTrk();toast('✓ Tercatat: '+n)}
-$('#trk').addEventListener('click',e=>{const d=e.target.closest('.del');if(d){LOG.items.splice(+d.dataset.x,1);renderTrk()}else if(e.target.id==='rs'){LOG.items=[];renderTrk()}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)return go(b.dataset.t);const a=e.target.closest('.add');if(a)add(a.dataset.n,a.dataset.g,a.dataset.k);if(e.target.closest('.wadd')){addWater(250);toast('💧 +250 ml air putih tercatat')}});
-
-/* ---------- Kalkulator ---------- */
-$('#cf').onsubmit=e=>{e.preventDefault();const a=+$('#age').value,w=+$('#wt').value,m=$('#sex').value==='m',f=+$('#act').value;
-const kcal=Math.round(w*(m?24:22)*f*(a>50?.92:1)),lim=kcal*.1;let g=Math.min(50,Math.round(lim/4));if(a<19)g=Math.min(g,25);LIM=g;ls.set('gg_lim',g);renderTrk();
-$('#cr').innerHTML=`<div class="card pad"><h3>Batas gula amanmu</h3><div class="nums"><div><b class="gt">${g} g</b>gram</div><div><b class="gt">${sdt(g)} 🍵</
+$('#trk').addEventListener('click',e=>{const d=e.target.closest('.del');if(d){LOG.items.splice(+d.dataset.x,1
